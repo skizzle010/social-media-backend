@@ -1,12 +1,13 @@
+require("dotenv").config();
 const express = require('express');
 const app = express();
 app.use(express.json())
 
 const mongoose = require('mongoose');
-const router  = require('../routes/user');
+const router  = require('./routes/user');
 mongoose.set('strictQuery', false)
 
-const uri = 'mongodb+srv://admin:5vpPj5Ph2ulbgtkP@cluster0.gpt9h72.mongodb.net/?retryWrites=true&w=majority';
+const uri = process.env.MONGO_URL;
 
 async function connect(){
     try{
