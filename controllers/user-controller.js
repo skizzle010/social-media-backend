@@ -1,4 +1,6 @@
 const user = require("../models/user");
+const bcrypt = require("bcrypt");
+const { findByIdAndDelete, findByIdAndRemove } = require("../models/blog");
 
 exports.getAllUsers = async (req, res) => {
   let users;
@@ -22,13 +24,15 @@ exports.signup = async (req, res) => {
     console.log(err);
   }
 
-  if(existing_user){
-      return  res.status(400).json({message: "User already exists" })
+  if (existing_user) {
+    return res.status(400).json({ message: "User already exists" });
   }
+  const salt = await bcrypt.genSalt();
+  const hashPassword = await bcrypt.hash(password, salt);
   const userpp = new user({
     name,
     email,
-    password,
+    password: hashPassword,
   });
   let data;
   try {
@@ -38,3 +42,25 @@ exports.signup = async (req, res) => {
   }
   return res.status(201).json({ data });
 };
+
+exports.login = async(req,res)=>{
+  const {email, password } = req.body;
+  let existing_user;
+  try {
+    existing_user = await user.findOne({ email });
+  } catch (err) {
+    console.log(err);
+  }
+
+  if (!existing_user) {
+    return res.status(400).json({ message: "Couldn't find user" });
+  }
+
+  const isPasswordCorrect = bcrypt.compareSync(password,existing_user.password)
+  if(!isPasswordCorrect){
+    res.status(400).json({message:"Incorrect Password"})
+  } 
+  return res.status(200).json({message:"Login Successful"})
+
+}
+
